@@ -1,0 +1,107 @@
+import os
+import cv2
+import numpy as np
+import random
+
+  // to add noise to images 
+
+def add_noise(image, mean=0, std_dev=30):
+    """
+    Adds random Gaussian noise to the given image.
+    
+    Parameters:
+        image (numpy.ndarray): The input image (BGR color space).
+        mean (float): Mean of the Gaussian distribution for noise (default is 0).
+        std_dev (float): Standard deviation of the Gaussian distribution for noise (default is 25).
+    
+    Returns:
+        numpy.ndarray: The image with added noise.
+    """
+    # Generate random Gaussian noise
+    noise = np.zeros_like(image)
+    cv2.randn(noise, mean, std_dev)
+    
+    # Add noise to the image
+    noisy_image = cv2.add(image, noise, dtype=cv2.CV_8UC3)
+    
+    return noisy_image
+
+def add_noise_to_all_images_in_folder(folder_path, output_folder_path, mean=0, std_dev=30):
+    """
+    Adds random Gaussian noise to all images in the given folder and saves the noisy images to the output folder.
+    
+    Parameters:
+        folder_path (str): Path to the folder containing the original images.
+        output_folder_path (str): Path to the folder where the noisy images will be saved.
+        mean (float): Mean of the Gaussian distribution for noise (default is 0).
+        std_dev (float): Standard deviation of the Gaussian distribution for noise (default is 30).
+    """
+    # Create output folder if it doesn't exist
+    if not os.path.exists(output_folder_path):
+        os.makedirs(output_folder_path)
+    
+    # List all image files in the folder
+    image_files = [file for file in os.listdir(folder_path) if file.endswith(('.jpg', '.jpeg', '.png'))]
+    
+    # Iterate over each image file
+    for image_file in image_files:
+        # Load the image
+        image_path = os.path.join(folder_path, image_file)
+        image = cv2.imread(image_path)
+        
+        # Add noise to the image
+        noisy_image = add_noise(image, mean, std_dev)
+        
+        # Save the noisy image
+        noisy_image_name = f"noisy_{image_file}"
+        output_path = os.path.join(output_folder_path, noisy_image_name)
+        cv2.imwrite(output_path, noisy_image)
+
+# Example usage:
+input_folder_path = "/users/aymanasaria/retinal_video_images"
+output_folder_path = "/users/aymanasaria/1"
+
+add_noise_to_all_images_in_folder(input_folder_path, output_folder_path)
+
+for i, image in enumerate(flipped_images):
+    original_image_name = os.path.basename(image_names_sorted[i])  # Get the original image name
+    flipped_image_name = f"flipped_{original_image_name}" 
+    flip_save_path = os.path.join(save_dir_images, flipped_image_name)
+    cv2.imwrite(flip_save_path, image)
+
+// to flip images and masks
+
+          # this is working code to flip images, dont change
+import numpy as np
+import cv2
+import tensorflow as tf
+
+# Define function to horizontally flip images
+def flip_image(image):
+    flipped_image = cv2.flip(image, 1)  # Flip horizontally
+    return flipped_image
+
+# Define function to horizontally flip masks
+def flip_mask(mask):
+    flipped_mask = cv2.flip(mask, 1)  # Flip horizontally
+    return flipped_mask
+
+# Apply flipping operation to images
+flipped_images = np.array([flip_image(image) for image in resized_image_dataset])
+
+# Add an extra channel dimension to flipped images to match the shape of resized images
+flipped_images = np.expand_dims(flipped_images, axis=-1)
+
+# Apply flipping operation to masks
+flipped_masks = np.array([flip_mask(mask) for mask in resized_masks])
+flipped_masks = np.expand_dims(flipped_masks, axis=-1)
+
+# Concatenate original and flipped images
+augmented_images = np.concatenate((resized_image_dataset, flipped_images), axis=0)
+
+# Concatenate original and flipped masks
+augmented_masks = np.concatenate((resized_masks, flipped_masks), axis=0)
+
+# Check the shape of augmented datasets
+print("Augmented image dataset shape:", augmented_images.shape)
+print("Augmented mask dataset shape:", augmented_masks.shape)
