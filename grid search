@@ -1,0 +1,46 @@
+from tensorflow.keras.callbacks import EarlyStopping
+from keras.models import load_model
+import numpy as np
+
+# defining hyperparameters to be tested
+epochs_list = [25, 35, 45]  # epochs
+activation_functions = ['relu', 'sigmoid', 'softmax']  # Activation functions
+class_weights = [{0: 0.010045203415369162, 1: 2.2222222222222223}, {0: 1, 1: 1}]  # class weights
+
+# Creating a function to calculate IOU
+def calculate_iou(y_true, y_pred):
+    intersection = np.logical_and(y_true, y_pred)
+    union = np.logical_or(y_true, y_pred)
+    iou_score = np.sum(intersection) / np.sum(union)
+    return iou_score
+
+# Creating a function to tune hyperparameters
+def param_tune(epochs, activation_func, weights):
+
+    # Defining and compiling U-Net model with current hyperparameters
+    model = load_model('directory of where model is stored', compile=True)
+    # Early stopping to prevent overfitting
+    early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+
+    # Training the model 
+    model.fit(X_train, y_train, epochs=epochs, batch_size=32, validation_split=0.2, callbacks=[early_stopping])
+
+    # Evaluating the model on validation data 
+    loss, accuracy = model.evaluate(X_val, y_val)
+
+    # Predictions on validation data
+    y_pred = model.predict(X_val)
+
+    # Calculating IOU
+    iou = calculate_iou(y_val, y_pred)
+
+    # Returning the accuracy, loss, and IOU
+    return accuracy, loss, iou
+
+# Running hyperparameter tuning for each combination
+for epochs in epochs_list:
+    for activation_func in activation_functions:
+        for weights in class_weights:
+            accuracy, loss, iou = param_tune(epochs, activation_func, weights)
+            print(f"Epochs: {epochs}, Activation Function: {activation_func}, Class Weights: {weights}")
+            print(f"Accuracy: {accuracy}, Loss: {loss}, IOU: {iou}")
