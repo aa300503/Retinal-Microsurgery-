@@ -1,0 +1,42 @@
+images = [cv2.imread(img, 0) for img in image_names_sorted]
+
+image_dataset = np.array(images)
+image_dataset = np.expand_dims(image_dataset, axis = 3)
+import tensorflow as tf
+
+def resize_image(image):
+    resized_image = tf.image.resize(image, [256, 256])
+    return resized_image
+
+
+# Resize the image
+resized_image_dataset = resize_image(image_dataset)
+
+# print(image_dataset)
+print(resized_image_dataset)
+
+      from sklearn.model_selection import train_test_split
+
+# Convert TensorFlow tensors to NumPy arrays
+X_data = np.array(resized_image_dataset)
+y_data = np.array(resized_masks)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.20, random_state=42)
+
+# Check the shapes of the training and testing sets
+print("X_train shape:", X_train.shape)
+print("y_train shape:", y_train.shape)
+print("X_test shape:", X_test.shape)
+print("y_test shape:", y_test.shape)
+
+  print("Image data shape is: ", image_dataset.shape)
+print("Mask data shape is: ", mask_dataset.shape)
+print("Max pixel value in image is: ", image_dataset.max())
+print("Labels in the mask are : ", np.unique(mask_dataset))
+
+print("resized image data shape is: ", resized_image_dataset.shape)
+print("resized mask data shape is: ", resized_masks.shape)
+print("Max pixel value in image is: ", image_dataset.max())
+print("Labels in the mask are : ", np.unique(mask_dataset))
+# the one after the shape is because it is greyscale, 0 is the black background
